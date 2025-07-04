@@ -1,19 +1,25 @@
 //importo la connessione
 import connection from "../db.js";
 
+
 const index = (req, res) => {
-    //prelevo tutti i dati dal database
-    const sql = "SELECT * FROM `blog`";
-    //eseguo la query
-    connection.query(sql, (err, result) => {
-        if (err) {
-            console.log("error");
-            return res.status(500).json({ error: "Errore nel server" });
+  console.log(req.imagePath)
+  const sql = "SELECT * FROM `movies`";
+  connection.query(sql, (err, result) => {
+    if (err) {
+      return res.status(500).json({error: "Errore di sistema", info: err});
+    } else {
+      const movies = result.map((curMovies) => {
+        return {
+          ...curMovies,// copio un array e collego l'immagine
+          image: `${req.imagePath}/${curMovies.image}`
         }
-        res.status(200).json({
-            data: result,
-        });
-    });
+      });
+      res.json({
+        data: movies,
+      });
+    }
+  });
 };
 
 
@@ -25,10 +31,16 @@ const show = (req, res) => {
     if (result.length === 0) {
       res.status(404).json({
         error: "movies non trovato",
+        info: {
+            id: id
+        }
       });
     } else {
       res.json({
-        data: result[0],
+        data: {
+          ...result[0], // prendo il primo elemento dell'array
+          image: `${req.imagePath}/${result[0].image}` // collego l'immagine  
+        }
       });
     }
   });
